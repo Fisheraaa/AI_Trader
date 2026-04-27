@@ -1,0 +1,197 @@
+AI炒股
+创建者
+Y Yy
+
+创建时间
+2026年3月7日10:49
+类别
+project
+上次编辑者
+Y Yy
+
+上次更新时间
+2026年4月12日13:54
+background：
+虚拟盘，3.17-5.8（共35个交易日），双赛道，启动资金各100万元，国信A股赛道(沪深A股范围), 中金ETF赛道(ETF范围)
+结合了WSL2 运行环境、D 盘数据持久化、多模型冗余以及飞书半自动执行。
+🚀AI 模拟盘操盘全流程Workflow (最终版)
+一、核心策略架构：长看短做，模型赛马
+放弃分秒级高频博弈，锚定“小时/天” 级别趋势，利用40 RPM 的高频API 实现多模型会诊。
+1 .模型投委会(冗余阵列)
+通过代码逻辑实现“失败自动降级”，确保决策不因API 宕机中断。
+梯队
+模型推荐
+职责说明
+第一梯队(主力)
+DeepSeek-R1 / Llama-3 .3 -70B
+核心策略官：深度量价分析，思维链推理逻辑。
+第二梯队(候补)
+Mistral-Large-2
+Nemotron-340B
+/
+速度极快：主力繁忙时接管，负责实时行情判断。
+AI炒股 1
+第三梯队(兜底)
+Gemma-2-27B / Phi-3 -Medium
+极致鲁棒：确保极端环境下仍能输出基础指令。
+特定任务型
+Mixtral-8x22B / Llama-3 -70B
+新闻情报官：扫描财联社/东财，进行新闻情绪评分。
+二、飞书机器人：动态预警中心
+利用飞书富文本卡片，解决“模型思考久、股价波动快”的延迟问题。
+行情提示(蓝卡)：每10-30 分钟汇报异动，不消耗AI 额度。
+决策预警(橙卡)：包含“建议入场区间”（如10.0-10.2 元）而非孤点，附带“操作理由”与“失效时间”。
+重连简报(紫卡)：关机重启后，自动对比停机前后的价差，汇报“断线期间异常”。
+硬核风险(红卡)：系统崩溃、API 连续报错或市场极端行情。
+三、完整Master Plan 实施阶段
+1 .数据基建期(现在- 3 .16)
+D 盘持久化：在WSL2 中将Docker 卷挂载至D:\AI_Trader\data。
+历史补全：使用Python 抓取目标股池过去180 天日线数据，建立“价格相对位置”坐标。
+环境部署：
+Container 1 (SQLite/PostgreSQL): 存时间序列数据，数据库文件驻留D盘。
+Container 2 (Crawler): 实时爬虫，对接akshare + efinance 双数据源。
+2 . 盘中执行期(交易日09:15 - 15:00)
+分级决策流：
+Level 1 (脚本级)：每30 秒监测股价。触达预警区间（如支撑位/均线）触发 Level 2。
+Level 2 (模型级)：启动“多模型路由器”，DeepSeek 分析技术面+ Mistral分析情绪面- Llama 总结建议。
+Level 3 (手动级)：飞书推送建议，你在手机App 完成最终下单。
+AI炒股 2
+3 . 动态风控与止损(非死板止损)
+逻辑止损：跌破3% 不触发“自动卖出”，而是激活“止损会诊”。
+AI 判别：若判断为“缩量洗盘”，推送“建议持有/加仓”；若判断为“放量破位”，推送“趋势反转，分批止损”。
+四、鲁棒性与冗余设置(Redundancy)
+1 .关机重连与状态恢复(Persistence)
+状态标志位：脚本记录is_synced=False 到D 盘。
+重启流程：1. 读取D 盘状态- 2. 补抓关机期间K 线- 3. 计算价差- 4. 飞书补发简报。
+中断保护：关机仅停止“建议推送”，不影响模拟盘已有持仓，无重大损失风险。
+2 . 异常防御
+模型热切换：Python 装饰器捕获429/500 错误，1 秒内重定向请求至候补模型。
+逻辑锁死：设置max_order_interval，防止重启瞬间重复发送相同建议。
+资金冗余：AI 建议仓位永远受代码硬上限约束（如单笔上限10%）。
+1 . 心跳检测：
+飞书机器人每小时发一条“系统存活”报数。如果10 分钟没收到，说明你的WSL2 可能因为Windows 更新关机了。
+关机重连与状态恢复(Persistence)
+如果你在WSL2 运行期间意外关机或网络中断，系统需要具备“记忆断点”的能力。
+数据库持久化：必须使用Docker 挂载本地卷（Volume）。这样即使容器重启，之前的行情数据和AI 决策历史也不会丢失。
+状态标志位(State Tags)：脚本在每次执行买卖建议后，都会在本地数据库记录一个is_synced=False 的标志。
+重连逻辑：1. 当你再次开机并启动Docker 时，脚本会自动读取数据库。
+2. 如果发现有is_synced=False 的记录，会立即同步当前的实时价格。
+AI炒股 3
+3. 差价报警：如果发现关机期间股价发生了剧烈波动（例如跌了2% 以上），重连瞬间飞书会发送一条“紧急状态补救通知”，告知你断线期间发生的重大变化。
+3 .预防重大损失的“安全垫”设计(Safety Buffers)
+为了确保“随时中断也不会有重大损失”，我们需要在代码逻辑中加入以下鲁棒性设置：
+无感状态保护：
+脚本只建议，不锁仓：因为是发给你手动操作，你关机了，AI 只是停止了“发建议”，你原本在App 里的持仓是安全的。
+逻辑锁死：* 在代码里加上max_order_interval （最小决策间隔）。防止因为脚本重连瞬间逻辑混乱，疯狂给你手机发几十条重复的买入建议。
+五、我们的第一步行动建议
+既然你认可飞书和模型冗余方案，我们分步走：
+1 . Action 1: 你去飞书开发者平台创建一个“企业自建应用”，并把App ID 和App Secret 备好。
+2 . Action 2: 我为你设计一个“多模型决策路由器” 的核心代码框架，它能自动在几个模型间做负载均衡和错误切换。
+我们需要先从“Action 2：多模型路由器”的代码逻辑开始确认吗？我会用Python 实现并在WSL2 环境下通过环境变量管理Key。
+具体实施顺序：
+这个顺序是按照“先稳固地基，再打通链路，最后激活决策”的逻辑安排的：
+第一阶段：基础设施与数据持久化(数据基建期)检查配置
+这是为了确保你的数据在Docker 或WSL2 重启后不会丢失。
+1 . WSL2 与Docker 环境配置：在D 盘创建AI_Trader 目录，并配置Docker 卷挂载。
+AI炒股 4
+2 . 数据库部署：启动存储容器（SQLite 或PostgreSQL），用于记录时间序列行情和决策状态标志位。
+3 . 历史数据抓取：编写Python 脚本利用akshare 或efinance 补全过去180 天的日线数据。
+第二阶段：通讯与监控体系(飞书机器人)飞书机器人发送
+在模型介入前，先让系统具备“说话”的能力，方便后续调试。1 . 飞书应用创建：完成Action 1，获取App ID 和Secret。
+2 . 预警卡片开发：编写富文本卡片推送逻辑（实现蓝、橙、紫、红四种颜色分类预警）。
+3 . 心跳检测：实现每小时一次的系统存活报数。
+第三阶段：核心大脑构建(模型路由器)无标题
+这是最关键的代码逻辑，决定了决策的鲁棒性。
+1 . 多模型路由开发：实现Action 2，利用Python 装饰器处理NVIDIA API 的故障切换（Failover）。
+2 . 思维链与任务分配：配置第一梯队（量价分析）到第三梯队（基础指令）的提示词工程。
+3 . 逻辑锁死防止：加入max_order_interval 和仓位硬上限约束。
+第四阶段：实战策略逻辑(盘中执行期)
+1 . 分级决策流联调：打通30 秒股价监测（Level 1）到模型会诊（Level 2）的触发链路。
+2 . 动态风控测试：模拟“放量破位”与“缩量洗盘”的判别逻辑，测试止损会诊推送。3 . 断点恢复演练：手动关闭WSL2，测试is_synced 标志位和价差补发功能。
+AI炒股 5
+project实施 MVP
+基础配置
+1.0
+A股完善plan
+具体步骤
+etf_plan
+无标题
+文件名
+角色
+核心功能(精简版)
+etf_list .txt
+标的名单
+存储所有要监控的ETF 代码（如sh510300），每行一个。它是系统的“名单表”，修改它即可增减监控对象。
+DataManager.py
+数据管理员
+1. 增量更新：对比本地数据库，只补齐缺失天数的数据，不再全量下载。
+2. 深度计算：计算布林带、KDJ、MACD、RSI、成交量比率等全套技术指标。
+3. 持久化：将处理好的数据存入trading .db。
+AutoTrader_V3.py
+策略大脑
+1. 形态翻译：将数据库里的数字翻译成AI 能听懂的文字（如“触碰布林下轨”）。
+2. 多维初筛：自动剔除极度风险（超买且触碰压力位）的标的。
+3. AI 精选：调用DeepSeek/Llama 模型，从20 个潜力股中选出3-8 个最优解并发送飞书。
+trading.db
+大脑存储
+(Memory)
+存储所有价格和技术指标，保证断电重启后数据还在。
+更新1
+多指标中线决策复盘
+pip因限制报错
+AI炒股 6
+更新2
+自动化+记忆库+快捷开启+报时心跳文件综述
+更新3
+环境指数，多周期共振，逻辑证伪思考，动态RR (Risk-Reward) 与阶梯止盈 plan
+截止目前功能：
+更新4（未来）
+json转化机制，if(txt有){if(json有)则不动，else写入append}，else{json中多余的删掉}
+对话，询问个股如何
+SOP
+bash chmod_once .sh./start.sh./status.sh./stop.sh
+目前设置了启动docker后自动运行scheduler.py
+wsl
+cd /mnt/d/AI_Trader
+docker compose up -d --build
+docker compose ps -a
+docker logs -f ai_trader_app
+关机：
+AI炒股 7
+docker compose stop docker compose down
+one-api:
+http://localhost:3000/
+长期使用方法
+docker compose up -d
+查看运行日志：
+docker logs -f ai_trader_app
+更新代码后重启：
+docker compose restart app
+更新依赖/基础镜像后重建：
+docker compose build --no-cache app && docker compose up -d
+验收：
+docker exec -it ai_trader_app bash -lc "cd /app && python3 -c 'import pandas,akshare,requests; print(\"deps ok\")'"
+docker exec -it ai_trader_app bash -lc "cd /app && python3 DataManager2.py "
+失败报告：
+docker exec -it ai_trader_app bash -lc "cd /app && cat data/daily_fetch_failures.json"
+自选ETF txt文件转json：
+docker exec -it ai_trader_app bash -lc "cd /app && python3 positions_import_from_txt.py --txt my_positions.txt --json my_positions.json"
+docker exec -it ai_trader_app bash -lc "cd /app && python3 AT3.py "
+看当前有几个AT3进程:
+AI炒股 8
+docker exec -it ai_trader_app bash -lc "ps -ef | grep AT3 .py | grep -v grep"
+进程面板：
+docker exec -it ai_trader_app bash -lc "cd /app && python3 scheduler_status_view.py "
+docker exec -it ai_trader_app bash -lc "cd /app && python3 analyze_evolution.py "
+检查到数据收集到了什么时间：
+docker exec -it ai_trader_app bash -lc "python3 - <<'PY'import sqlite3, pandas as pd
+conn=sqlite3.connect('/app/data/db/trading.db')
+# 1) market_daily 最新日期
+m=pd.read_sql ('select max(date) as d from market_daily', conn)
+print('market_daily max date:', m.iloc[0]['d'])
+# 2) 任取一个日线表看最新日期
+d=pd.read_sql (\"select name from sqlite_master where type='table' and name like 'tech_daily_%' limit 1\", conn) if not d .empty:
+t=d.iloc[0]['name']
+x=pd.read_sql (f'select max(date) as d from {t}', conn) print(t, 'max date:', x.iloc[0]['d'])
+conn.close()
+PY"

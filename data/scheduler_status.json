@@ -1,0 +1,56 @@
+{
+  "started_at": 1773802610.9012268,
+  "last_run_data": 1773822377.362673,
+  "last_result_data": "OK",
+  "next_run_data": 1773826060.4048164,
+  "last_run_at": 1773822460.404808,
+  "last_result_at": "OK",
+  "next_run_at": 1773824260.4048178,
+  "history": [
+    {
+      "ts": 1773802621.1947265,
+      "task": "DataManager2.py",
+      "result": "OK"
+    },
+    {
+      "ts": 1773802895.5976515,
+      "task": "AT2.py",
+      "result": "OK"
+    },
+    {
+      "ts": 1773803925.1633182,
+      "task": "DataManager2.py",
+      "result": "OK"
+    },
+    {
+      "ts": 1773804017.6569755,
+      "task": "AT2.py",
+      "result": "OK"
+    },
+    {
+      "ts": 1773805922.5234547,
+      "task": "AT2.py",
+      "result": "OK"
+    },
+    {
+      "ts": 1773808277.7928102,
+      "task": "DataManager2.py",
+      "result": "OK"
+    },
+    {
+      "ts": 1773808292.4118838,
+      "task": "AT2.py",
+      "result": "FAIL(rc=1)"
+    },
+    {
+      "ts": 1773822377.3627188,
+      "task": "DataManager2.py",
+      "result": "OK"
+    },
+    {
+      "ts": 1773822460.4048128,
+      "task": "AT2.py",
+      "result": "OK"
+    }
+  ]
+}

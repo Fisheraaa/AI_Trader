@@ -1,0 +1,36 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai_trader_app
+    volumes:
+      - /mnt/d/AI_Trader:/app
+    working_dir: /app
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Shanghai
+    depends_on:
+      one-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'print(\"ok\")'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  one-api:
+    image: justsong/one-api:latest
+    container_name: one-api
+    ports:
+      - "3000:3000"
+    volumes:
+      - /mnt/d/AI_Trader/one-api-data:/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10

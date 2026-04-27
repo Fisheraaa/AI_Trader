@@ -1,0 +1,42 @@
+# Environment variables
+.env
+
+# Virtual environment
+.venv/
+
+# Database files
+data/db/
+
+# Log files
+data/logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker files
+docker-compose.override.yml
+
+# Python files
+__pycache__/
+*.pyc
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Backup files
+*.bak
+*.backup
+
+# OneAPI data
+one-api-data/
+
+# Resource PDF files
+resource/*.pdf

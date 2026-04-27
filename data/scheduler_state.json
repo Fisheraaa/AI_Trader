@@ -1,0 +1,20 @@
+{
+  "last_data_hourly_run": "2026-04-13 23:37:17",
+  "last_at_run": "2026-04-13 23:33:53",
+  "last_data_full_run_date": "2026-04-13",
+  "last_ok": {
+    "DataManager_full": "2026-04-13 17:23:54",
+    "AT2": "2026-03-18 22:53:27",
+    "DataManager_hourly": "2026-04-13 23:37:17",
+    "AT3": "2026-04-13 23:33:53"
+  },
+  "last_error": {},
+  "running": {
+    "DataManager_hourly": {
+      "start": "2026-04-14 09:28:02",
+      "cmd": "DataManager2.py hourly_only",
+      "pid": 32863
+    }
+  },
+  "heartbeat": "2026-04-14 09:28:02"
+}
