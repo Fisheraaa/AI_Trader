@@ -1,10 +1,17 @@
 # AI Trader
 
+<div style="text-align: right; margin-bottom: 20px;">
+  <a href="#english-version" style="padding: 8px 16px; background-color: #f0f0f0; border-radius: 4px; text-decoration: none; color: #333; margin-right: 10px;">English</a>
+  <a href="#chinese-version" style="padding: 8px 16px; background-color: #0366d6; border-radius: 4px; text-decoration: none; color: white;">中文</a>
+</div>
+
+<a name="chinese-version"></a>
+
 ## 项目简介
 
-AI Trader是一个集成了硬性量化指标(Hard Quant)、宏观环境风控(Market Context)与AI多模型辩论反思(AI Multi-agent Debate)的闭环自动化辅助交易系统。
+AI Trader是一个集成了硬性量化指标(Hard Quant)、宏观环境风控(Market Context)与AI多模型辩论反思(AI Multi-agent Debate)的闭环自动化交易系统。
 
-- **双赛道虚拟盘**：中金ETF赛道模拟盘，启动资金100万元
+- **双赛道虚拟盘**：国信A股赛道(沪深A股范围)和中金ETF赛道(ETF范围)，启动资金各100万元
 - **时间周期**：3.17-5.8（共35个交易日）
 - **技术架构**：WSL2运行环境、D盘数据持久化、多模型冗余、飞书半自动执行
 
@@ -150,12 +157,21 @@ docker exec -it ai_trader_app bash -lc "ps -ef | grep AT3.py | grep -v grep"
 
 ---
 
+<div style="text-align: right; margin-bottom: 20px;">
+  <a href="#english-version" style="padding: 8px 16px; background-color: #0366d6; border-radius: 4px; text-decoration: none; color: white; margin-right: 10px;">English</a>
+  <a href="#chinese-version" style="padding: 8px 16px; background-color: #f0f0f0; border-radius: 4px; text-decoration: none; color: #333;">中文</a>
+</div>
+
+<a name="english-version"></a>
+
 # AI Trader
 
 ## Project Introduction
 
 AI Trader is a closed-loop automated trading system that integrates Hard Quant indicators, Market Context risk control, and AI Multi-agent Debate reflection.
 
+- **Dual-track virtual trading**：Guosen A-share track (Shanghai and Shenzhen A-share range) and CICC ETF track (ETF range), with 1 million yuan startup capital for each
+- **Time period**：3.17-5.8 (35 trading days in total)
 - **Technical architecture**：WSL2 runtime environment, D-drive data persistence, multi-model redundancy, Feishu semi-automatic execution
 
 ## Core Features
